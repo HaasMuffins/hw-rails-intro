@@ -4,17 +4,22 @@ class MoviesController < ApplicationController
   # GET /movies or /movies.json
   def index
     @all_ratings = Movie.all_ratings
-
-    if params[:ratings].present?
-      @ratings_to_show = params[:ratings].keys
+    if params[:sort_by].nil? && params[:ratings].nil?
+      @sort_by = session[:sort_by]
+      @ratings_to_show = session[:ratings] || @all_ratings
     else
-      @ratings_to_show = @all_ratings
+      @sort_by = params[:sort_by]
+
+      if params[:ratings].present?
+        @ratings_to_show = params[:ratings].keys
+      else
+        @ratings_to_show = @all_ratings
+      end
+
+      session[:sort_by] = @sort_by
+      session[:ratings] = @ratings_to_show
     end
-
-    @sort_by = params[:sort_by]
-
     @movies = Movie.with_ratings(@ratings_to_show)
-
     if %w[title release_date].include?(@sort_by)
       @movies = @movies.order(@sort_by)
     end
